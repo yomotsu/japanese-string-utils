@@ -1,0 +1,33 @@
+{
+  "name": "japanese-string-utils",
+  "version": "0.1.0",
+  "author": "Yomotsu",
+  "license": "MIT",
+  "repository": "yomotsu/japanese-string-utils",
+  "jsnext:main": "dist/japanese-string-utils.module.js",
+  "module": "dist/japanese-string-utils.module.js",
+  "main": "dist/japanese-string-utils.js",
+  "types": "dist/index.d.ts",
+  "devDependencies": {
+    "rollup": "^0.64.1",
+    "rollup-plugin-typescript2": "^0.16.1",
+    "rollup-watch": "^4.3.1",
+    "typescript": "^3.0.1",
+    "uglify-js": "^3.4.7"
+  },
+  "scripts": {
+    "dev": "npm run watch",
+    "watch": "rollup --config --watch",
+    "build": "rollup --config && uglifyjs dist/japanese-string-utils.js --comments '/^/*!/' > dist/japanese-string-utils.min.js"
+  },
+  "keywords": [
+    "string",
+    "japanese",
+    "hiragana",
+    "katakana",
+    "kanji",
+    "zenkaku",
+    "hankaku",
+    "convert"
+  ]
+}

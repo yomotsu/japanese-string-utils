@@ -1,11 +1,12 @@
 
-export { toAscii } from './to-ascii.js';
-export { toFullwidth } from './to-fullwidth.js';
-export { toFullwidthKana } from './to-fullwidth-kana.js';
-export { toHalfwidthKana } from './to-halfwidth-kana.js';
-export { toHiragana } from './to-hiragana.js';
-export { toKatakana } from './to-katakana.js';
-export { toNFC } from './to-nfc.js';
-export { toNumeric } from './to-numeric.js';
-export { toNumericFromKanji } from './to-numeric-from-kanji.js';
-export { addCommas } from './add-commas.js';
+export { toAscii } from './to-ascii';
+export { toFullwidth } from './to-fullwidth';
+export { toFullwidthKana } from './to-fullwidth-kana';
+export { toHalfwidthKana } from './to-halfwidth-kana';
+export { toHiragana } from './to-hiragana';
+export { toKatakana } from './to-katakana';
+export { toNFC } from './to-nfc';
+export { toNumeric } from './to-numeric';
+export { toNumericFromKanji } from './to-numeric-from-kanji';
+export { addCommas } from './add-commas';
+export { normalizeHyphens } from './normalize-hyphens';

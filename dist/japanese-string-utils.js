@@ -317,6 +317,30 @@
 	    return integerPart + fractionalPart;
 	}
 
+	var NORMALIZED = '\u2010';
+	var HYPHEN_LIKE_PATTERN = new RegExp([
+	    '\u002D',
+	    '\uFE63',
+	    '\uFF0D',
+	    '\u00AD',
+	    '\u2010',
+	    '\u2011',
+	    '\u2012',
+	    '\u2013',
+	    '\u2014',
+	    '\u2015',
+	    '\u2043',
+	    '\u2212',
+	    '\u2500',
+	    '\u2501',
+	    '\u30FC',
+	    '\uFF70',
+	].join('|'), 'g');
+	function normalizeHyphens(value, replacement) {
+	    if (replacement === void 0) { replacement = NORMALIZED; }
+	    return value.replace(HYPHEN_LIKE_PATTERN, replacement);
+	}
+
 	exports.toAscii = toAscii;
 	exports.toFullwidth = toFullwidth;
 	exports.toFullwidthKana = toFullwidthKana;
@@ -327,6 +351,7 @@
 	exports.toNumeric = toNumeric;
 	exports.toNumericFromKanji = toNumericFromKanji;
 	exports.addCommas = addCommas;
+	exports.normalizeHyphens = normalizeHyphens;
 
 	Object.defineProperty(exports, '__esModule', { value: true });
 

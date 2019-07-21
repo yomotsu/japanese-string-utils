@@ -4,10 +4,10 @@ export function toNumeric( value: string ): string {
 
 	const asciiString = toAscii( value )
 		.replace( /[^0-9.-]/g, '' )     // remove non numeric letters
-		.replace(/(?!^)-|[^-\d]/g, '' ) // --1-0 -> -10
+		.replace(/(?!^)-/g, '' )        // --1-0 -> -10
 		.replace( /\.+/, '.' )          // 0..0 -> 0.0
-		.replace( /^0+/, '0' )          // 000.000 -> 0.000
-		.replace( /^0([0-9])+/, '$1' )  // 01.000 -> 1.000
+		.replace( /^(-)?0+/, '$10' )     // 000.000 -> 0.000
+		.replace( /^(-)?0([1-9])+/, '$1$2' )  // 01.000 -> 1.000
 
 	const contains2MoreDot = /\..*\./.test( asciiString );
 	

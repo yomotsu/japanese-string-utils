@@ -170,8 +170,21 @@ function toNFC(value) {
 }
 
 function toNumeric(value) {
-    var asciiString = toAscii(value);
-    return asciiString.replace(/[^0-9.]/g, '');
+    var asciiString = toAscii(value)
+        .replace(/[^0-9.-]/g, '')
+        .replace(/(?!^)-|[^-\d]/g, '')
+        .replace(/\.+/, '.')
+        .replace(/^0+/, '0')
+        .replace(/^0([0-9])+/, '$1');
+    var contains2MoreDot = /\..*\./.test(asciiString);
+    if (!contains2MoreDot)
+        return asciiString;
+    var array = asciiString.split('.');
+    var intPart = array.shift();
+    var fractPart = array.join('');
+    if (fractPart)
+        return intPart + "." + fractPart;
+    return intPart;
 }
 
 var normalizeMap = {

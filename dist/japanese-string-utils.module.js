@@ -172,10 +172,10 @@ function toNFC(value) {
 function toNumeric(value) {
     var asciiString = toAscii(value)
         .replace(/[^0-9.-]/g, '')
-        .replace(/(?!^)-|[^-\d]/g, '')
+        .replace(/(?!^)-/g, '')
         .replace(/\.+/, '.')
-        .replace(/^0+/, '0')
-        .replace(/^0([0-9])+/, '$1');
+        .replace(/^(-)?0+/, '$10')
+        .replace(/^(-)?0([1-9])+/, '$1$2');
     var contains2MoreDot = /\..*\./.test(asciiString);
     if (!contains2MoreDot)
         return asciiString;

@@ -1,8 +1,9 @@
 import typescript from 'rollup-plugin-typescript2';
 import pkg from './package.json';
+
 const license = `/*!
- * japanese-string-utils.js
- * https://github.com/yomotsu/japanese-string-utils
+ * ${ pkg.name }
+ * https://github.com/${ pkg.repository }
  * (c) 2018 @yomotsu
  * Released under the MIT License.
  */`;

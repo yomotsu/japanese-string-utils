@@ -1,5 +1,5 @@
 /*!
- * japanese-string-utils.js
+ * japanese-string-utils
  * https://github.com/yomotsu/japanese-string-utils
  * (c) 2018 @yomotsu
  * Released under the MIT License.
@@ -7,7 +7,7 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(factory((global.japaneseStringUtils = {})));
+	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.japaneseStringUtils = {}));
 }(this, (function (exports) { 'use strict';
 
 	function toAscii(value) {
@@ -45,6 +45,46 @@
 	    return String.fromCharCode.apply(null, charArray);
 	}
 
+	var DAKUTEN = 0x309B;
+	var HAN_DAKUTEN = 0x309C;
+	function toNFC(value) {
+	    var charArray = [];
+	    for (var i = 0; i < value.length; i++) {
+	        var charCode = value.charCodeAt(i);
+	        switch (true) {
+	            case (0x304B <= charCode && charCode <= 0x3062 && (charCode % 2 === 1)):
+	            case (0x30AB <= charCode && charCode <= 0x30C2 && (charCode % 2 === 1)):
+	            case (0x3064 <= charCode && charCode <= 0x3069 && (charCode % 2 === 0)):
+	            case (0x30C4 <= charCode && charCode <= 0x30C9 && (charCode % 2 === 0)): {
+	                var nextChar = value.charCodeAt(i + 1);
+	                charArray.push(charCode + (nextChar === DAKUTEN ? 1 : 0));
+	                if (charArray[charArray.length - 1] !== charCode)
+	                    i++;
+	                break;
+	            }
+	            case (0x306F <= charCode && charCode <= 0x307F && (charCode % 3 === 0)):
+	            case (0x30CF <= charCode && charCode <= 0x30DD && (charCode % 3 === 0)): {
+	                var nextChar = value.charCodeAt(i + 1);
+	                charArray.push(charCode + (nextChar === DAKUTEN ? 1 : nextChar === HAN_DAKUTEN ? 2 : 0));
+	                if (charArray[charArray.length - 1] !== charCode)
+	                    i++;
+	                break;
+	            }
+	            case (0x3046 === charCode || 0x30a6 === charCode): {
+	                var nextChar = value.charCodeAt(i + 1);
+	                charArray.push(charCode + (nextChar === DAKUTEN ? 78 : 0));
+	                if (charArray[charArray.length - 1] != charCode)
+	                    i++;
+	                break;
+	            }
+	            default:
+	                charArray.push(charCode);
+	                break;
+	        }
+	    }
+	    return String.fromCharCode.apply(null, charArray);
+	}
+
 	var fullwidthKanaMap = {
 	    0xFF66: 0x30F2, 0xFF67: 0x30A1, 0xFF68: 0x30A3, 0xFF69: 0x30A5, 0xFF6A: 0x30A7,
 	    0xFF6B: 0x30A9, 0xff6c: 0x30e3, 0xff6d: 0x30e5, 0xff6e: 0x30e7, 0xff6f: 0x30c3,
@@ -70,7 +110,7 @@
 	            charArray[i] = charCode;
 	        }
 	    }
-	    return String.fromCharCode.apply(null, charArray);
+	    return toNFC(String.fromCharCode.apply(null, charArray));
 	}
 
 	var halfwidthKanaMap = {
@@ -130,46 +170,6 @@
 	        }
 	        else {
 	            charArray[i] = charCode;
-	        }
-	    }
-	    return String.fromCharCode.apply(null, charArray);
-	}
-
-	var DAKUTEN = 0x309B;
-	var HAN_DAKUTEN = 0x309C;
-	function toNFC(value) {
-	    var charArray = [];
-	    for (var i = 0; i < value.length; i++) {
-	        var charCode = value.charCodeAt(i);
-	        switch (true) {
-	            case (0x304B <= charCode && charCode <= 0x3062 && (charCode % 2 === 1)):
-	            case (0x30AB <= charCode && charCode <= 0x30C2 && (charCode % 2 === 1)):
-	            case (0x3064 <= charCode && charCode <= 0x3069 && (charCode % 2 === 0)):
-	            case (0x30C4 <= charCode && charCode <= 0x30C9 && (charCode % 2 === 0)): {
-	                var nextChar = value.charCodeAt(i + 1);
-	                charArray.push(charCode + (nextChar === DAKUTEN ? 1 : 0));
-	                if (charArray[charArray.length - 1] !== charCode)
-	                    i++;
-	                break;
-	            }
-	            case (0x306F <= charCode && charCode <= 0x307F && (charCode % 3 === 0)):
-	            case (0x30CF <= charCode && charCode <= 0x30DD && (charCode % 3 === 0)): {
-	                var nextChar = value.charCodeAt(i + 1);
-	                charArray.push(charCode + (nextChar === DAKUTEN ? 1 : nextChar === HAN_DAKUTEN ? 2 : 0));
-	                if (charArray[charArray.length - 1] !== charCode)
-	                    i++;
-	                break;
-	            }
-	            case (0x3046 === charCode || 0x30a6 === charCode): {
-	                var nextChar = value.charCodeAt(i + 1);
-	                charArray.push(charCode + (nextChar === DAKUTEN ? 78 : 0));
-	                if (charArray[charArray.length - 1] != charCode)
-	                    i++;
-	                break;
-	            }
-	            default:
-	                charArray.push(charCode);
-	                break;
 	        }
 	    }
 	    return String.fromCharCode.apply(null, charArray);
@@ -354,6 +354,8 @@
 	    return value.replace(HYPHEN_LIKE_PATTERN, replacement);
 	}
 
+	exports.addCommas = addCommas;
+	exports.normalizeHyphens = normalizeHyphens;
 	exports.toAscii = toAscii;
 	exports.toFullwidth = toFullwidth;
 	exports.toFullwidthKana = toFullwidthKana;
@@ -363,8 +365,6 @@
 	exports.toNFC = toNFC;
 	exports.toNumeric = toNumeric;
 	exports.toNumericFromKanji = toNumericFromKanji;
-	exports.addCommas = addCommas;
-	exports.normalizeHyphens = normalizeHyphens;
 
 	Object.defineProperty(exports, '__esModule', { value: true });
 

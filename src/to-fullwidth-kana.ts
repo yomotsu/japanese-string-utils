@@ -1,3 +1,5 @@
+import { toNFC } from './to-nfc';
+
 interface fullwidthKanaMap {
 	[key: number]: number;
 };
@@ -36,6 +38,6 @@ export function toFullwidthKana( value: string ): string {
 		}
 
 	}
-	return String.fromCharCode.apply( null, charArray );
+	return toNFC( String.fromCharCode.apply( null, charArray ) );
 
 }

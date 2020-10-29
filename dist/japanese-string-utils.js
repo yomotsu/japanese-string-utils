@@ -181,7 +181,7 @@
 	        .replace(/(?!^)-/g, '')
 	        .replace(/\.+/, '.')
 	        .replace(/^(-)?0+/, '$10')
-	        .replace(/^(-)?0([1-9])+/, '$1$2');
+	        .replace(/^(-)?0([1-9]+)/, '$1$2');
 	    var contains2MoreDot = /\..*\./.test(asciiString);
 	    if (!contains2MoreDot)
 	        return asciiString;

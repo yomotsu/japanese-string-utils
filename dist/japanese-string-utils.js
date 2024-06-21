@@ -278,6 +278,8 @@
 	    normalizedValue = normalizedValue.replace(new RegExp("[" + __spreadArrays([
 	        '.'
 	    ], Object.keys(basicNumber), Object.keys(basicDigit), Object.keys(largeDigit)).join('|') + "]"), '');
+	    if (normalizedValue === '')
+	        return '';
 	    do {
 	        var matched_1 = normalizedValue.match(complexLargeDigitPattern);
 	        var digit = matched_1[0];

@@ -1,5 +1,6 @@
-import typescript from 'rollup-plugin-typescript2';
-import pkg from './package.json';
+import pkg from './package.json' assert { type: "json" };
+import typescript from 'typescript';
+import rollupTypescript from '@rollup/plugin-typescript';
 
 const license = `/*!
  * ${ pkg.name }
@@ -26,8 +27,6 @@ export default {
 		}
 	],
 	plugins: [
-		typescript( {
-			typescript: require( 'typescript' ),
-		} ),
+		rollupTypescript( { typescript } ),
 	],
 };

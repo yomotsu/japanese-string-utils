@@ -5,9 +5,9 @@
  * Released under the MIT License.
  */
 function toAscii(value) {
-    var charArray = [];
-    for (var i = value.length - 1; 0 <= i; i--) {
-        var charCode = charArray[i] = value.charCodeAt(i);
+    const charArray = [];
+    for (let i = value.length - 1; 0 <= i; i--) {
+        const charCode = charArray[i] = value.charCodeAt(i);
         switch (true) {
             case (charCode <= 0xff5e && 0xff01 <= charCode):
                 charArray[i] -= 0xfee0;
@@ -24,9 +24,9 @@ function toAscii(value) {
 }
 
 function toFullwidth(value) {
-    var charArray = [];
-    for (var i = value.length - 1; 0 <= i; i--) {
-        var charCode = charArray[i] = value.charCodeAt(i);
+    const charArray = [];
+    for (let i = value.length - 1; 0 <= i; i--) {
+        const charCode = charArray[i] = value.charCodeAt(i);
         switch (true) {
             case (charCode <= 0x007E && 0x0021 <= charCode):
                 charArray[i] += 0xFEE0;
@@ -39,18 +39,18 @@ function toFullwidth(value) {
     return String.fromCharCode.apply(null, charArray);
 }
 
-var DAKUTEN = 0x309B;
-var HAN_DAKUTEN = 0x309C;
+const DAKUTEN = 0x309B;
+const HAN_DAKUTEN = 0x309C;
 function toNFC(value) {
-    var charArray = [];
-    for (var i = 0; i < value.length; i++) {
-        var charCode = value.charCodeAt(i);
+    const charArray = [];
+    for (let i = 0; i < value.length; i++) {
+        const charCode = value.charCodeAt(i);
         switch (true) {
             case (0x304B <= charCode && charCode <= 0x3062 && (charCode % 2 === 1)):
             case (0x30AB <= charCode && charCode <= 0x30C2 && (charCode % 2 === 1)):
             case (0x3064 <= charCode && charCode <= 0x3069 && (charCode % 2 === 0)):
             case (0x30C4 <= charCode && charCode <= 0x30C9 && (charCode % 2 === 0)): {
-                var nextChar = value.charCodeAt(i + 1);
+                const nextChar = value.charCodeAt(i + 1);
                 charArray.push(charCode + (nextChar === DAKUTEN ? 1 : 0));
                 if (charArray[charArray.length - 1] !== charCode)
                     i++;
@@ -58,14 +58,14 @@ function toNFC(value) {
             }
             case (0x306F <= charCode && charCode <= 0x307F && (charCode % 3 === 0)):
             case (0x30CF <= charCode && charCode <= 0x30DD && (charCode % 3 === 0)): {
-                var nextChar = value.charCodeAt(i + 1);
+                const nextChar = value.charCodeAt(i + 1);
                 charArray.push(charCode + (nextChar === DAKUTEN ? 1 : nextChar === HAN_DAKUTEN ? 2 : 0));
                 if (charArray[charArray.length - 1] !== charCode)
                     i++;
                 break;
             }
             case (0x3046 === charCode || 0x30a6 === charCode): {
-                var nextChar = value.charCodeAt(i + 1);
+                const nextChar = value.charCodeAt(i + 1);
                 charArray.push(charCode + (nextChar === DAKUTEN ? 78 : 0));
                 if (charArray[charArray.length - 1] != charCode)
                     i++;
@@ -79,7 +79,7 @@ function toNFC(value) {
     return String.fromCharCode.apply(null, charArray);
 }
 
-var fullwidthKanaMap = {
+const fullwidthKanaMap = {
     0xFF66: 0x30F2, 0xFF67: 0x30A1, 0xFF68: 0x30A3, 0xFF69: 0x30A5, 0xFF6A: 0x30A7,
     0xFF6B: 0x30A9, 0xff6c: 0x30e3, 0xff6d: 0x30e5, 0xff6e: 0x30e7, 0xff6f: 0x30c3,
     0xFF70: 0x30FC, 0xFF71: 0x30A2, 0xFF72: 0x30A4, 0xFF73: 0x30A6, 0xFF74: 0x30A8,
@@ -94,9 +94,9 @@ var fullwidthKanaMap = {
     0xFF9D: 0x30F3, 0xFF9E: 0x309B, 0xFF9F: 0x309C,
 };
 function toFullwidthKana(value) {
-    var charArray = [];
-    for (var i = value.length - 1; 0 <= i; i--) {
-        var charCode = value.charCodeAt(i);
+    const charArray = [];
+    for (let i = value.length - 1; 0 <= i; i--) {
+        const charCode = value.charCodeAt(i);
         if (fullwidthKanaMap[charCode]) {
             charArray[i] = fullwidthKanaMap[charCode];
         }
@@ -107,7 +107,7 @@ function toFullwidthKana(value) {
     return toNFC(String.fromCharCode.apply(null, charArray));
 }
 
-var halfwidthKanaMap = {
+const halfwidthKanaMap = {
     0x30A1: 0xFF67, 0x30A3: 0xFF68, 0x30A5: 0xFF69, 0x30A7: 0xFF6A, 0x30A9: 0xFF6B,
     0x30e3: 0xff6c, 0x30e5: 0xff6d, 0x30e7: 0xff6e, 0x30c3: 0xff6f, 0x30FC: 0xFF70,
     0x30A2: 0xFF71, 0x30A4: 0xFF72, 0x30A6: 0xFF73, 0x30A8: 0xFF74, 0x30AA: 0xFF75,
@@ -122,9 +122,9 @@ var halfwidthKanaMap = {
     0x309B: 0xFF9E, 0x309C: 0xFF9F, 0x30F2: 0xFF66,
 };
 function toHalfwidthKana(value) {
-    var charArray = [];
-    for (var i = 0; i < value.length; i++) {
-        var charCode = value.charCodeAt(i);
+    const charArray = [];
+    for (let i = 0; i < value.length; i++) {
+        const charCode = value.charCodeAt(i);
         switch (true) {
             case (charCode in halfwidthKanaMap):
                 charArray.push(halfwidthKanaMap[charCode]);
@@ -147,18 +147,18 @@ function toHalfwidthKana(value) {
 }
 
 function toHiragana(value) {
-    var charArray = [];
-    for (var i = value.length - 1; 0 <= i; i--) {
-        var charCode = value.charCodeAt(i);
+    const charArray = [];
+    for (let i = value.length - 1; 0 <= i; i--) {
+        const charCode = value.charCodeAt(i);
         charArray[i] = (0x30A1 <= charCode && charCode <= 0x30F6) ? charCode - 0x0060 : charCode;
     }
     return String.fromCharCode.apply(null, charArray);
 }
 
 function toKatakana(value) {
-    var charArray = [];
-    for (var i = value.length - 1; 0 <= i; i--) {
-        var charCode = value.charCodeAt(i);
+    const charArray = [];
+    for (let i = value.length - 1; 0 <= i; i--) {
+        const charCode = value.charCodeAt(i);
         if (0x3041 <= charCode && charCode <= 0x3096) {
             charArray[i] = charCode + 0x0060;
         }
@@ -170,49 +170,27 @@ function toKatakana(value) {
 }
 
 function toNumeric(value) {
-    var asciiString = toAscii(value)
+    const asciiString = toAscii(value)
         .replace(/[^0-9.-]/g, '')
         .replace(/(?!^)-/g, '')
         .replace(/\.+/, '.')
         .replace(/^(-)?0+/, '$10')
         .replace(/^(-)?0([1-9]+)/, '$1$2');
-    var contains2MoreDot = /\..*\./.test(asciiString);
+    const contains2MoreDot = /\..*\./.test(asciiString);
     if (!contains2MoreDot)
         return asciiString;
-    var array = asciiString.split('.');
-    var intPart = array.shift();
-    var fractPart = array.join('');
+    const array = asciiString.split('.');
+    const intPart = array.shift();
+    const fractPart = array.join('');
     if (fractPart)
-        return intPart + "." + fractPart;
+        return `${intPart}.${fractPart}`;
     return intPart;
 }
 
-/*! *****************************************************************************
-Copyright (c) Microsoft Corporation.
-
-Permission to use, copy, modify, and/or distribute this software for any
-purpose with or without fee is hereby granted.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-PERFORMANCE OF THIS SOFTWARE.
-***************************************************************************** */
-
-function __spreadArrays() {
-    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-    for (var r = Array(s), k = 0, i = 0; i < il; i++)
-        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-            r[k] = a[j];
-    return r;
-}
-
-var normalizeMap = {
+const ONE = '一';
+const normalizeMap = {
     '0': '〇', '０': '〇', '零': '〇',
-    '1': '一', '１': '一', '壱': '一', '壹': '一', '弌': '一',
+    '1': ONE, '１': ONE, '壱': ONE, '壹': ONE, '弌': ONE,
     '2': '二', '２': '二', '弐': '二', '貳': '二',
     '3': '三', '３': '三', '参': '三', '參': '三',
     '4': '四', '４': '四', '肆': '四',
@@ -233,8 +211,8 @@ var normalizeMap = {
     'ー': '-', '−': '-',
     '＋': '+',
 };
-var needsNormalizePattern = new RegExp("[" + Object.keys(normalizeMap).join('|') + "]", 'g');
-var basicNumber = {
+const needsNormalizePattern = new RegExp(`[${Object.keys(normalizeMap).join('|')}]`, 'g');
+const basicNumber = {
     '\u3007': 0,
     '\u4E00': 1,
     '\u4E8C': 2,
@@ -246,85 +224,91 @@ var basicNumber = {
     '\u516B': 8,
     '\u4E5D': 9,
 };
-var basicDigit = {
+const basicDigit = {
     '\u5341': 1e1,
     '\u767E': 1e2,
     '\u5343': 1e3,
 };
-var largeDigit = {
+const bigDigit = {
     '\u4E07': 1e4,
     '\u5104': 1e8,
     '\u5146': 1e12,
+    '\u4EAC': 1e16,
 };
-var basicDigitPattern = new RegExp("[" + Object.keys(basicDigit).join('|') + "]");
-var largeDigitPattern = new RegExp("[" + Object.keys(largeDigit).join('|') + "]");
-var simpleDigitPattern = new RegExp("[" + __spreadArrays(Object.keys(basicDigit), Object.keys(largeDigit)).join('|') + "]");
-var complexLargeDigitPattern = new RegExp("([" + Object.keys(basicDigit).join('|') + "][" + Object.keys(largeDigit).join('|') + "])");
+const basicNumberPattern = new RegExp(`[${Object.keys(basicNumber).join('|')}]`);
+const basicNumberWithDotPattern = new RegExp(`[${[...Object.keys(basicNumber), '.'].join('|')}]`);
+const basicDigitPattern = new RegExp(`[${Object.keys(basicDigit).join('|')}]`);
+const bigDigitPattern = new RegExp(`[${Object.keys(bigDigit).join('|')}]`);
 function toNumericFromKanji(value) {
-    var normalizedValue = value.trim();
-    var matched = value.match(needsNormalizePattern);
-    matched && matched.forEach(function (char) {
+    let normalizedValue = value.trim();
+    const matched = value.match(needsNormalizePattern);
+    matched && matched.forEach((char) => {
         normalizedValue = normalizedValue.replace(char, normalizeMap[char]);
     });
-    var chunks = [];
-    var signMatched = normalizedValue.match(/^([+-])/);
-    var sign = signMatched ? signMatched[1] : '';
-    normalizedValue = normalizedValue.replace(new RegExp("[^" + __spreadArrays([
-        '.'
-    ], Object.keys(basicNumber), Object.keys(basicDigit), Object.keys(largeDigit)) + "]", 'g'), '');
+    const signMatched = normalizedValue.match(/^([+-])/);
+    const sign = signMatched ? signMatched[1] : '';
+    normalizedValue = normalizedValue.replace(new RegExp(`[^${[
+        '.',
+        ...Object.keys(basicNumber),
+        ...Object.keys(basicDigit),
+        ...Object.keys(bigDigit),
+    ]}]`, 'g'), '');
     if (normalizedValue === '')
         return '';
-    do {
-        var matched_1 = normalizedValue.match(complexLargeDigitPattern);
-        if (!matched_1)
-            break;
-        var digit = matched_1[0];
-        var hasLeadDigit = digit.match(basicDigitPattern);
-        var leadDigit = hasLeadDigit ? basicDigit[hasLeadDigit[0]] : 1;
-        var hasMainDigit = digit.match(largeDigitPattern);
-        var mainDigit = hasMainDigit ? largeDigit[hasMainDigit[0]] : 1;
-        var numbers_1 = normalizedValue.slice(0, matched_1.index) || '1';
-        var normalizedNumbers_1 = +toNumeric(numbers_1.split('').map(function (char) {
+    const chunks = [{
+            letters: [],
+            digit: 1,
+        }];
+    let currentBigDigit = 1;
+    for (let i = normalizedValue.length - 1; i >= 0; i--) {
+        const currentChunk = chunks[chunks.length - 1];
+        if (basicNumberWithDotPattern.test(normalizedValue[i])) {
+            currentChunk.letters.unshift(normalizedValue[i]);
+            continue;
+        }
+        if (basicDigitPattern.test(normalizedValue[i])) {
+            const hasLeadNumber = normalizedValue[i - 1] && basicNumberPattern.test(normalizedValue[i - 1]);
+            const leadNumber = hasLeadNumber ? normalizedValue[i - 1] : ONE;
+            chunks.push({
+                letters: [leadNumber],
+                digit: basicDigit[normalizedValue[i]] * currentBigDigit,
+            });
+            if (hasLeadNumber)
+                i--;
+            continue;
+        }
+        if (bigDigitPattern.test(normalizedValue[i])) {
+            currentBigDigit = bigDigit[normalizedValue[i]];
+            chunks.push({
+                letters: [],
+                digit: currentBigDigit,
+            });
+            continue;
+        }
+    }
+    const numbers = chunks.reduce((acc, current) => {
+        const letters = current.letters.join('') || '0';
+        const numbers = +toNumeric(letters.split('').map((char) => {
             return basicNumber[char] !== undefined ? basicNumber[char] : char;
         }).join(''));
-        chunks.push(normalizedNumbers_1 * leadDigit * mainDigit);
-        normalizedValue = normalizedValue.slice(matched_1.index + digit.length);
-    } while (complexLargeDigitPattern.test(normalizedValue));
-    do {
-        var matched_2 = normalizedValue.match(simpleDigitPattern);
-        if (!matched_2)
-            break;
-        var digit = matched_2[0];
-        var mainDigit = largeDigit[digit] || basicDigit[digit] || 1;
-        var numbers_2 = normalizedValue.slice(0, matched_2.index) || '1';
-        var normalizedNumbers_2 = +toNumeric(numbers_2.split('').map(function (char) {
-            return basicNumber[char] !== undefined ? basicNumber[char] : char;
-        }).join(''));
-        chunks.push(normalizedNumbers_2 * mainDigit);
-        normalizedValue = normalizedValue.slice(matched_2.index + digit.length);
-    } while (simpleDigitPattern.test(normalizedValue));
-    var numbers = normalizedValue || '0';
-    var normalizedNumbers = +toNumeric(numbers.split('').map(function (char) {
-        return basicNumber[char] !== undefined ? basicNumber[char] : char;
-    }).join(''));
-    chunks.push(normalizedNumbers);
-    var result = chunks.reduce(function (acc, current) { return acc + current; }, 0);
-    return "" + sign + result;
+        return acc + numbers * current.digit;
+    }, 0);
+    return `${sign}${numbers}`;
 }
 
 function addCommas(numericString) {
-    var rgx = /(\d+)(\d{3})/;
-    var x = String(numericString).split('.');
-    var integerPart = x[0];
-    var fractionalPart = x.length > 1 ? '.' + x[1] : '';
+    const rgx = /(\d+)(\d{3})/;
+    const x = String(numericString).split('.');
+    let integerPart = x[0];
+    const fractionalPart = x.length > 1 ? '.' + x[1] : '';
     while (rgx.test(integerPart)) {
         integerPart = integerPart.replace(rgx, '$1' + ',' + '$2');
     }
     return integerPart + fractionalPart;
 }
 
-var NORMALIZED = '\u2010';
-var HYPHEN_LIKE_PATTERN = new RegExp([
+const NORMALIZED = '\u2010';
+const HYPHEN_LIKE_PATTERN = new RegExp([
     '\u002D',
     '\uFE63',
     '\uFF0D',
@@ -342,8 +326,7 @@ var HYPHEN_LIKE_PATTERN = new RegExp([
     '\u30FC',
     '\uFF70',
 ].join('|'), 'g');
-function normalizeHyphens(value, replacement) {
-    if (replacement === void 0) { replacement = NORMALIZED; }
+function normalizeHyphens(value, replacement = NORMALIZED) {
     return value.replace(HYPHEN_LIKE_PATTERN, replacement);
 }
 

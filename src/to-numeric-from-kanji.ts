@@ -153,7 +153,7 @@ export function toNumericFromKanji( value: string ): string {
 	} while ( simpleDigitPattern.test( normalizedValue ) );
 
 	// 一の位
-	const numbers = normalizedValue || '1';
+	const numbers = normalizedValue || '0';
 	const normalizedNumbers = + toNumeric( numbers.split('').map( ( char ) => {
 
 		return basicNumber[ char ] || char;
@@ -163,7 +163,6 @@ export function toNumericFromKanji( value: string ): string {
 
 
 	const result = chunks.reduce( ( acc, current ) => acc + current, 0 );
-	console.log(sign, result);
 	return `${ sign }${ result }`;
 
 }

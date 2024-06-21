@@ -295,6 +295,13 @@ function toNumericFromKanji(value) {
     }, 0);
     return `${sign}${numbers}`;
 }
+toNumericFromKanji.validLetters = [...new Set([
+        ",",
+        ...Object.entries(normalizeMap).flat(),
+        ...Object.keys(basicNumber),
+        ...Object.keys(basicDigit),
+        ...Object.keys(bigDigit),
+    ])];
 
 function addCommas(numericString) {
     const rgx = /(\d+)(\d{3})/;

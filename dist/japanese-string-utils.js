@@ -310,13 +310,12 @@
 	        chunks.push(normalizedNumbers_2 * mainDigit);
 	        normalizedValue = normalizedValue.slice(matched_2.index + digit.length);
 	    } while (simpleDigitPattern.test(normalizedValue));
-	    var numbers = normalizedValue || '1';
+	    var numbers = normalizedValue || '0';
 	    var normalizedNumbers = +toNumeric(numbers.split('').map(function (char) {
 	        return basicNumber[char] || char;
 	    }).join(''));
 	    chunks.push(normalizedNumbers);
 	    var result = chunks.reduce(function (acc, current) { return acc + current; }, 0);
-	    console.log(sign, result);
 	    return "" + sign + result;
 	}
 

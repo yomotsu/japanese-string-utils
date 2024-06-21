@@ -122,7 +122,7 @@ export function toNumericFromKanji( value: string ): string {
 
 		const normalizedNumbers = + toNumeric( numbers.split('').map( ( char ) => {
 
-			return basicNumber[ char ] || char;
+			return basicNumber[ char ] !== undefined ? basicNumber[ char ] : char;
 
 		} ).join( '' ) );
 
@@ -143,7 +143,7 @@ export function toNumericFromKanji( value: string ): string {
 
 		const normalizedNumbers = + toNumeric( numbers.split('').map( ( char ) => {
 
-			return basicNumber[ char ] || char;
+			return basicNumber[ char ] !== undefined ? basicNumber[ char ] : char;
 
 		} ).join( '' ) );
 
@@ -156,11 +156,10 @@ export function toNumericFromKanji( value: string ): string {
 	const numbers = normalizedValue || '0';
 	const normalizedNumbers = + toNumeric( numbers.split('').map( ( char ) => {
 
-		return basicNumber[ char ] || char;
+		return basicNumber[ char ] !== undefined ? basicNumber[ char ] : char;
 
 	} ).join( '' ) );
 	chunks.push( normalizedNumbers );
-
 
 	const result = chunks.reduce( ( acc, current ) => acc + current, 0 );
 	return `${ sign }${ result }`;

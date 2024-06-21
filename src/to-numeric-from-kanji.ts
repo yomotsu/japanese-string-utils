@@ -11,7 +11,7 @@ const ONE = '一';
 
 const normalizeMap: normalizeMap = {
 	'0': '〇', '０': '〇', '零': '〇',
-	'1': ONE, '１': ONE, '壱': ONE, '壹':ONE, '弌': ONE,
+	'1': ONE, '１': ONE, '壱': ONE, '壹': ONE, '弌': ONE,
 	'2': '二', '２': '二', '弐': '二', '貳': '二',
 	'3': '三', '３': '三', '参': '三', '參': '三',
 	'4': '四', '４': '四', '肆': '四',
@@ -166,3 +166,11 @@ export function toNumericFromKanji( value: string ): string {
 	return `${ sign }${ numbers }`;
 
 }
+
+toNumericFromKanji.validLetters = [ ...new Set( [
+  ",",
+	...Object.entries( normalizeMap ).flat(),
+	...Object.keys(basicNumber),
+	...Object.keys(basicDigit),
+	...Object.keys(bigDigit),
+] ) ];

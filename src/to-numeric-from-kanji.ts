@@ -90,31 +90,35 @@ export function toNumericFromKanji( value: string ): string {
 	// 処理できる文字以外を削除
 	normalizedValue = normalizedValue.replace(
 		new RegExp(
-			`[${ [
+			`[^${ [
 				'.',
 				...Object.keys( basicNumber ),
 				...Object.keys( basicDigit ),
 				...Object.keys( largeDigit ),
-			].join( '|' ) }]`
+			] }]`,
+			'g'
 		), ''
 	);
 
 	if ( normalizedValue === '' ) return '';
+
+	console.log(complexLargeDigitPattern.test( normalizedValue ));
+	
 
 	// 桁ごとに分解
 	// 十億、百万などの桁の組み合わせ
 	do {
 
 		const matched = normalizedValue.match( complexLargeDigitPattern );
-		const digit = matched![ 0 ];
+		if ( ! matched ) break;
 
-
+		const digit = matched[ 0 ];
 		const hasLeadDigit = digit.match( basicDigitPattern );
 		const leadDigit = hasLeadDigit ? basicDigit[ hasLeadDigit[ 0 ] ] : 1;
 
 		const hasMainDigit = digit.match( largeDigitPattern );
 		const mainDigit = hasMainDigit ? largeDigit[ hasMainDigit[ 0 ] ] : 1;
-		const numbers = normalizedValue.slice( 0, matched!.index! ) || '1';
+		const numbers = normalizedValue.slice( 0, matched.index ) || '1';
 
 		const normalizedNumbers = + toNumeric( numbers.split('').map( ( char ) => {
 
@@ -123,7 +127,7 @@ export function toNumericFromKanji( value: string ): string {
 		} ).join( '' ) );
 
 		chunks.push( normalizedNumbers * leadDigit * mainDigit );
-		normalizedValue = normalizedValue.slice( matched!.index! + digit.length );
+		normalizedValue = normalizedValue.slice( matched.index! + digit.length );
 
 	} while ( complexLargeDigitPattern.test( normalizedValue ) );
 
@@ -131,9 +135,11 @@ export function toNumericFromKanji( value: string ): string {
 	do {
 
 		const matched = normalizedValue.match( simpleDigitPattern );
-		const digit = matched![ 0 ];
+		if ( ! matched ) break;
+
+		const digit = matched[ 0 ];
 		const mainDigit = largeDigit[ digit ] || basicDigit[ digit ] || 1;
-		const numbers = normalizedValue.slice( 0, matched!.index! ) || '1';
+		const numbers = normalizedValue.slice( 0, matched.index ) || '1';
 
 		const normalizedNumbers = + toNumeric( numbers.split('').map( ( char ) => {
 

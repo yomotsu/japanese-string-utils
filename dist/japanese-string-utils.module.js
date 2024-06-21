@@ -187,6 +187,29 @@ function toNumeric(value) {
     return intPart;
 }
 
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+
+function __spreadArrays() {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+}
+
 var normalizeMap = {
     '0': '〇', '０': '〇', '零': '〇',
     '1': '一', '１': '一', '壱': '一', '壹': '一', '弌': '一',
@@ -206,6 +229,9 @@ var normalizeMap = {
     '佰': '百', '陌': '百',
     '仟': '千', '阡': '千',
     '萬': '万',
+    '．': '.', '。': '.', '・': '.',
+    'ー': '-', '−': '-',
+    '＋': '+',
 };
 var needsNormalizePattern = new RegExp("[" + Object.keys(normalizeMap).join('|') + "]", 'g');
 var basicNumber = {
@@ -221,96 +247,64 @@ var basicNumber = {
     '\u4E5D': 9,
 };
 var basicDigit = {
-    '\u5341': 2,
-    '\u767E': 3,
-    '\u5343': 4,
+    '\u5341': 1e1,
+    '\u767E': 1e2,
+    '\u5343': 1e3,
 };
 var largeDigit = {
-    '\u4E07': 5,
-    '\u5104': 9,
-    '\u5146': 13,
+    '\u4E07': 1e4,
+    '\u5104': 1e8,
+    '\u5146': 1e12,
 };
-var basicNumberPattern = new RegExp("^[" + Object.keys(basicNumber).join('|') + "]");
-var basicDigitPattern = new RegExp("^[" + Object.keys(basicDigit).join('|') + "]");
-var largeDigitPattern = new RegExp("^[" + Object.keys(largeDigit).join('|') + "]");
-var complexLargeDigitPattern = new RegExp("^([" + Object.keys(basicDigit).join('|') + "][" + Object.keys(largeDigit).join('|') + "])");
-function next10DigitLength(currentDigitLength) {
-    if (currentDigitLength < 2)
-        return 2;
-    var gap = 4 - Math.ceil((currentDigitLength - 2) % 4);
-    return currentDigitLength + gap;
-}
-function next100DigitLength(currentDigitLength) {
-    if (currentDigitLength < 3)
-        return 3;
-    var gap = 4 - Math.ceil((currentDigitLength - 3) % 4);
-    return currentDigitLength + gap;
-}
-function next1000DigitLength(currentDigitLength) {
-    if (currentDigitLength < 4)
-        return 4;
-    var gap = 4 - Math.ceil((currentDigitLength - 4) % 4);
-    return currentDigitLength + gap;
-}
+var basicDigitPattern = new RegExp("[" + Object.keys(basicDigit).join('|') + "]");
+var largeDigitPattern = new RegExp("[" + Object.keys(largeDigit).join('|') + "]");
+var simpleDigitPattern = new RegExp("[" + __spreadArrays(Object.keys(basicDigit), Object.keys(largeDigit)).join('|') + "]");
+var complexLargeDigitPattern = new RegExp("([" + Object.keys(basicDigit).join('|') + "][" + Object.keys(largeDigit).join('|') + "])");
 function toNumericFromKanji(value) {
-    var result = [];
-    var nomalizedValue = value;
+    var normalizedValue = value.trim();
     var matched = value.match(needsNormalizePattern);
     matched && matched.forEach(function (char) {
-        nomalizedValue = nomalizedValue.replace(char, normalizeMap[char]);
+        normalizedValue = normalizedValue.replace(char, normalizeMap[char]);
     });
-    for (var i = nomalizedValue.length - 1; i >= 0; i--) {
-        if (basicNumberPattern.test(nomalizedValue[i])) {
-            result.unshift(basicNumber[nomalizedValue[i]]);
-            continue;
-        }
-        if (basicDigitPattern.test(nomalizedValue[i])) {
-            var digitLength = -1;
-            var currentDigitLength = result.length;
-            var hasLeadNumber = nomalizedValue[i - 1] && basicNumberPattern.test(nomalizedValue[i - 1]);
-            var leadNumber = hasLeadNumber ? (basicNumber[nomalizedValue[i - 1]]) | 0 : 1;
-            if (nomalizedValue[i] === '十')
-                digitLength = next10DigitLength(currentDigitLength);
-            if (nomalizedValue[i] === '百')
-                digitLength = next100DigitLength(currentDigitLength);
-            if (nomalizedValue[i] === '千')
-                digitLength = next1000DigitLength(currentDigitLength);
-            for (var ii = 0, ll = digitLength - currentDigitLength; ii < ll; ii++) {
-                result.unshift(0);
-            }
-            result[0] = leadNumber;
-            if (hasLeadNumber)
-                i--;
-            continue;
-        }
-        if (nomalizedValue[i - 1] && complexLargeDigitPattern.test("" + nomalizedValue[i - 1] + nomalizedValue[i])) {
-            var currentDigitLength = result.length;
-            var hasLeadNumber = nomalizedValue[i - 2] && basicNumberPattern.test(nomalizedValue[i - 2]);
-            var leadNumber = hasLeadNumber ? (basicNumber[nomalizedValue[i - 2]]) | 0 : 1;
-            var digitLength = basicDigit[nomalizedValue[i - 1]] + largeDigit[nomalizedValue[i]] - 1;
-            for (var ii = 0, ll = digitLength - currentDigitLength; ii < ll; ii++) {
-                result.unshift(0);
-            }
-            result[0] = leadNumber;
-            if (hasLeadNumber)
-                i -= 2;
-            continue;
-        }
-        if (largeDigitPattern.test(nomalizedValue[i])) {
-            var currentDigitLength = result.length;
-            var hasLeadNumber = nomalizedValue[i - 1] && basicNumberPattern.test(nomalizedValue[i - 1]);
-            var leadNumber = hasLeadNumber ? (basicNumber[nomalizedValue[i - 1]]) | 0 : 1;
-            var digitLength = largeDigit[nomalizedValue[i]];
-            for (var ii = 0, ll = digitLength - currentDigitLength; ii < ll; ii++) {
-                result.unshift(0);
-            }
-            result[0] = leadNumber;
-            if (hasLeadNumber)
-                i--;
-            continue;
-        }
-    }
-    return result.join('');
+    var chunks = [];
+    var signMatched = normalizedValue.match(/^([+-])/);
+    var sign = signMatched ? signMatched[1] : '';
+    normalizedValue = normalizedValue.replace(new RegExp("[" + __spreadArrays([
+        '.'
+    ], Object.keys(basicNumber), Object.keys(basicDigit), Object.keys(largeDigit)).join('|') + "]"), '');
+    do {
+        var matched_1 = normalizedValue.match(complexLargeDigitPattern);
+        var digit = matched_1[0];
+        var hasLeadDigit = digit.match(basicDigitPattern);
+        var leadDigit = hasLeadDigit ? basicDigit[hasLeadDigit[0]] : 1;
+        var hasMainDigit = digit.match(largeDigitPattern);
+        var mainDigit = hasMainDigit ? largeDigit[hasMainDigit[0]] : 1;
+        var numbers_1 = normalizedValue.slice(0, matched_1.index) || '1';
+        var normalizedNumbers_1 = +toNumeric(numbers_1.split('').map(function (char) {
+            return basicNumber[char] || char;
+        }).join(''));
+        chunks.push(normalizedNumbers_1 * leadDigit * mainDigit);
+        normalizedValue = normalizedValue.slice(matched_1.index + digit.length);
+    } while (complexLargeDigitPattern.test(normalizedValue));
+    do {
+        var matched_2 = normalizedValue.match(simpleDigitPattern);
+        var digit = matched_2[0];
+        var mainDigit = largeDigit[digit] || basicDigit[digit] || 1;
+        var numbers_2 = normalizedValue.slice(0, matched_2.index) || '1';
+        var normalizedNumbers_2 = +toNumeric(numbers_2.split('').map(function (char) {
+            return basicNumber[char] || char;
+        }).join(''));
+        chunks.push(normalizedNumbers_2 * mainDigit);
+        normalizedValue = normalizedValue.slice(matched_2.index + digit.length);
+    } while (simpleDigitPattern.test(normalizedValue));
+    var numbers = normalizedValue || '1';
+    var normalizedNumbers = +toNumeric(numbers.split('').map(function (char) {
+        return basicNumber[char] || char;
+    }).join(''));
+    chunks.push(normalizedNumbers);
+    var result = chunks.reduce(function (acc, current) { return acc + current; }, 0);
+    console.log(sign, result);
+    return "" + sign + result;
 }
 
 function addCommas(numericString) {

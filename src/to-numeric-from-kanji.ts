@@ -1,6 +1,8 @@
 
 // 三百三三億五万千五五十五 => 33300051555
 
+import { toNumeric } from "to-numeric";
+
 interface normalizeMap {
 	[ key: string ]: string;
 };
@@ -24,6 +26,9 @@ const normalizeMap: normalizeMap = {
 	'佰': '百', '陌':'百',
 	'仟': '千', '阡':'千',
 	'萬': '万',
+	'．': '.', '。': '.', '・': '.', // 小数点
+	'ー': '-', '−': '-',
+	'＋': '+',
 };
 
 const needsNormalizePattern = new RegExp( `[${ Object.keys( normalizeMap ).join( '|' ) }]`, 'g' );
@@ -49,142 +54,108 @@ const basicNumber: basicNumberMap = {
 	'\u4E5D': 9, // 九
 };
 const basicDigit: digitMap = {
-	'\u5341': 2, // 十 1e1,
-	'\u767E': 3, // 百 1e2,
-	'\u5343': 4, // 千 1e3,
+	'\u5341': 1e1, // 十 1e1,
+	'\u767E': 1e2, // 百 1e2,
+	'\u5343': 1e3, // 千 1e3,
 };
 const largeDigit: digitMap = {
-	'\u4E07': 5,  // 万 1e4,
-	'\u5104': 9,  // 億 1e8,
-	'\u5146': 13, // 兆 1e12,
+	'\u4E07': 1e4,  // 万 1e4,
+	'\u5104': 1e8,  // 億 1e8,
+	'\u5146': 1e12, // 兆 1e12,
 };
 
-const basicNumberPattern = new RegExp( `^[${ Object.keys( basicNumber ).join( '|' ) }]` );
-const basicDigitPattern = new RegExp( `^[${ Object.keys( basicDigit ).join( '|' ) }]` );
-const largeDigitPattern = new RegExp( `^[${ Object.keys( largeDigit ).join( '|' ) }]` );
+// const basicNumberPattern = new RegExp( `[${ Object.keys( basicNumber ).join( '|' ) }]` );
+const basicDigitPattern = new RegExp( `[${ Object.keys( basicDigit ).join( '|' ) }]` );
+const largeDigitPattern = new RegExp( `[${ Object.keys( largeDigit ).join( '|' ) }]` );
+const simpleDigitPattern = new RegExp( `[${ [...Object.keys( basicDigit ), ...Object.keys( largeDigit )].join( '|' ) }]` );
 // 十億、百万などの桁の組み合わせ
-const complexLargeDigitPattern = new RegExp( `^([${ Object.keys( basicDigit ).join( '|' ) }][${ Object.keys( largeDigit ).join( '|' ) }])` );
-
-function next10DigitLength( currentDigitLength: number ): number {
-
-	// 十(2桁)、十万(6桁)、十億(10桁)...
-	if ( currentDigitLength < 2 ) return 2;
-	const gap = 4 - Math.ceil( ( currentDigitLength - 2  ) % 4 );
-	return currentDigitLength + gap;
-
-}
-
-function next100DigitLength( currentDigitLength: number ): number {
-
-	if ( currentDigitLength < 3 ) return 3;
-	const gap = 4 - Math.ceil( ( currentDigitLength - 3  ) % 4 );
-	return currentDigitLength + gap;
-
-}
-
-function next1000DigitLength( currentDigitLength: number ): number {
-
-	// 千(4桁)、千万(8桁)、千億(12桁)
-	if ( currentDigitLength < 4 ) return 4;
-	const gap = 4 - Math.ceil( ( currentDigitLength - 4  ) % 4 );
-	return currentDigitLength + gap;
-
-}
+const complexLargeDigitPattern = new RegExp( `([${ Object.keys( basicDigit ).join( '|' ) }][${ Object.keys( largeDigit ).join( '|' ) }])` );
 
 export function toNumericFromKanji( value: string ): string {
 
-	const result: number[] = [];
-
-	let nomalizedValue = value;
+	let normalizedValue = value.trim();
 	const matched = value.match( needsNormalizePattern );
 	matched && matched.forEach( ( char ) => {
 
-		nomalizedValue = nomalizedValue.replace( char, normalizeMap[ char ] );
+		normalizedValue = normalizedValue.replace( char, normalizeMap[ char ] );
 
 	} );
 
-	// TODO 文字列 nomalizedValue で、最初に登場した数字形式のみをパースする
+	const chunks: number[] = [];
 
-	for ( let i = nomalizedValue.length - 1; i >= 0; i -- ) {
+	// サインを取得
+	const signMatched = normalizedValue.match( /^([+-])/ );
+	const sign = signMatched ? signMatched[ 1 ] : '';
 
-		// 〇から九
-		if ( basicNumberPattern.test( nomalizedValue[ i ] ) ) {
+	// 処理できる文字以外を削除
+	normalizedValue = normalizedValue.replace(
+		new RegExp(
+			`[${ [
+				'.',
+				...Object.keys( basicNumber ),
+				...Object.keys( basicDigit ),
+				...Object.keys( largeDigit ),
+			].join( '|' ) }]`
+		), ''
+	);
 
-			result.unshift( basicNumber[ nomalizedValue[ i ] ] );
-			continue;
+	// 桁ごとに分解
+	// 十億、百万などの桁の組み合わせ
+	do {
 
-		}
+		const matched = normalizedValue.match( complexLargeDigitPattern );
+		const digit = matched![ 0 ];
 
-		// 千、百、十
-		if ( basicDigitPattern.test( nomalizedValue[ i ] ) ) {
 
-			// 一つ前が基本数字の場合（つまり、二千、五百、三百となる場合）一つ前を利用する。
-			// それ以外は「一」とする
-			let digitLength = - 1;
-			const currentDigitLength = result.length;
-			const hasLeadNumber = nomalizedValue[ i - 1 ] && basicNumberPattern.test( nomalizedValue[ i - 1 ] );
-			const leadNumber = hasLeadNumber ? ( basicNumber[ nomalizedValue[ i - 1 ] ] ) | 0 : 1;
-			if ( nomalizedValue[ i ] === '十' ) digitLength = next10DigitLength( currentDigitLength );
-			if ( nomalizedValue[ i ] === '百' ) digitLength = next100DigitLength( currentDigitLength );
-			if ( nomalizedValue[ i ] === '千' ) digitLength = next1000DigitLength( currentDigitLength );
+		const hasLeadDigit = digit.match( basicDigitPattern );
+		const leadDigit = hasLeadDigit ? basicDigit[ hasLeadDigit[ 0 ] ] : 1;
 
-			// 不足桁を0で埋める
-			for ( let ii = 0, ll = digitLength - currentDigitLength; ii < ll; ii ++ ) {
+		const hasMainDigit = digit.match( largeDigitPattern );
+		const mainDigit = hasMainDigit ? largeDigit[ hasMainDigit[ 0 ] ] : 1;
+		const numbers = normalizedValue.slice( 0, matched!.index! ) || '1';
 
-				result.unshift( 0 );
+		const normalizedNumbers = + toNumeric( numbers.split('').map( ( char ) => {
 
-			}
+			return basicNumber[ char ] || char;
 
-			result[ 0 ] = leadNumber;
-			if ( hasLeadNumber ) i --; // 2文字使ったので、1つ余分に進める
-			continue;
+		} ).join( '' ) );
 
-		}
+		chunks.push( normalizedNumbers * leadDigit * mainDigit );
+		normalizedValue = normalizedValue.slice( matched!.index! + digit.length );
 
-		// 十億、百万などの桁の組み合わせ
-		if ( nomalizedValue[ i - 1 ] && complexLargeDigitPattern.test( `${ nomalizedValue[ i - 1 ] }${ nomalizedValue[ i ] }` ) ) {
+	} while ( complexLargeDigitPattern.test( normalizedValue ) );
 
-			const currentDigitLength = result.length;
-			const hasLeadNumber = nomalizedValue[ i - 2 ] && basicNumberPattern.test( nomalizedValue[ i - 2 ] );
-			const leadNumber = hasLeadNumber ? ( basicNumber[ nomalizedValue[ i - 2 ] ] ) | 0 : 1;
+	// 億、万、百、十などの単体の桁
+	do {
 
-			// 桁数で埋める
-			const digitLength = basicDigit[ nomalizedValue[ i - 1 ] ] + largeDigit[ nomalizedValue[ i ] ] - 1;
-			for ( let ii = 0, ll = digitLength - currentDigitLength; ii < ll; ii ++ ) {
+		const matched = normalizedValue.match( simpleDigitPattern );
+		const digit = matched![ 0 ];
+		const mainDigit = largeDigit[ digit ] || basicDigit[ digit ] || 1;
+		const numbers = normalizedValue.slice( 0, matched!.index! ) || '1';
 
-				result.unshift( 0 );
+		const normalizedNumbers = + toNumeric( numbers.split('').map( ( char ) => {
 
-			}
+			return basicNumber[ char ] || char;
 
-			result[ 0 ] = leadNumber;
-			if ( hasLeadNumber ) i -= 2; // 3文字使ったので、2つ余分に進める
-			continue;
+		} ).join( '' ) );
 
-		}
+		chunks.push( normalizedNumbers * mainDigit );
+		normalizedValue = normalizedValue.slice( matched!.index! + digit.length );
 
-		// 億、万などの大きな桁の単体
-		if ( largeDigitPattern.test( nomalizedValue[ i ] ) ) {
+	} while ( simpleDigitPattern.test( normalizedValue ) );
 
-			const currentDigitLength = result.length;
-			const hasLeadNumber = nomalizedValue[ i - 1 ] && basicNumberPattern.test( nomalizedValue[ i - 1 ] );
-			const leadNumber = hasLeadNumber ? ( basicNumber[ nomalizedValue[ i - 1 ] ] ) | 0 : 1;
+	// 一の位
+	const numbers = normalizedValue || '1';
+	const normalizedNumbers = + toNumeric( numbers.split('').map( ( char ) => {
 
-			// 桁数で埋める
-			const digitLength = largeDigit[ nomalizedValue[ i ] ];
-			for ( let ii = 0, ll = digitLength - currentDigitLength; ii < ll; ii ++ ) {
+		return basicNumber[ char ] || char;
 
-				result.unshift( 0 );
+	} ).join( '' ) );
+	chunks.push( normalizedNumbers );
 
-			}
 
-			result[ 0 ] = leadNumber;
-			if ( hasLeadNumber ) i --; // 2文字使ったので、1つ余分に進める
-			continue;
-
-		}
-
-	}
-
-	return result.join( '' );
+	const result = chunks.reduce( ( acc, current ) => acc + current, 0 );
+	console.log(sign, result);
+	return `${ sign }${ result }`;
 
 }

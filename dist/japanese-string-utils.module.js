@@ -286,7 +286,7 @@ function toNumericFromKanji(value) {
         var mainDigit = hasMainDigit ? largeDigit[hasMainDigit[0]] : 1;
         var numbers_1 = normalizedValue.slice(0, matched_1.index) || '1';
         var normalizedNumbers_1 = +toNumeric(numbers_1.split('').map(function (char) {
-            return basicNumber[char] || char;
+            return basicNumber[char] !== undefined ? basicNumber[char] : char;
         }).join(''));
         chunks.push(normalizedNumbers_1 * leadDigit * mainDigit);
         normalizedValue = normalizedValue.slice(matched_1.index + digit.length);
@@ -299,14 +299,14 @@ function toNumericFromKanji(value) {
         var mainDigit = largeDigit[digit] || basicDigit[digit] || 1;
         var numbers_2 = normalizedValue.slice(0, matched_2.index) || '1';
         var normalizedNumbers_2 = +toNumeric(numbers_2.split('').map(function (char) {
-            return basicNumber[char] || char;
+            return basicNumber[char] !== undefined ? basicNumber[char] : char;
         }).join(''));
         chunks.push(normalizedNumbers_2 * mainDigit);
         normalizedValue = normalizedValue.slice(matched_2.index + digit.length);
     } while (simpleDigitPattern.test(normalizedValue));
     var numbers = normalizedValue || '0';
     var normalizedNumbers = +toNumeric(numbers.split('').map(function (char) {
-        return basicNumber[char] || char;
+        return basicNumber[char] !== undefined ? basicNumber[char] : char;
     }).join(''));
     chunks.push(normalizedNumbers);
     var result = chunks.reduce(function (acc, current) { return acc + current; }, 0);

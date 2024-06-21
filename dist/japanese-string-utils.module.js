@@ -274,7 +274,6 @@ function toNumericFromKanji(value) {
     ], Object.keys(basicNumber), Object.keys(basicDigit), Object.keys(largeDigit)) + "]", 'g'), '');
     if (normalizedValue === '')
         return '';
-    console.log(complexLargeDigitPattern.test(normalizedValue));
     do {
         var matched_1 = normalizedValue.match(complexLargeDigitPattern);
         if (!matched_1)

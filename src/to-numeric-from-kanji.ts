@@ -102,9 +102,6 @@ export function toNumericFromKanji( value: string ): string {
 
 	if ( normalizedValue === '' ) return '';
 
-	console.log(complexLargeDigitPattern.test( normalizedValue ));
-	
-
 	// 桁ごとに分解
 	// 十億、百万などの桁の組み合わせ
 	do {

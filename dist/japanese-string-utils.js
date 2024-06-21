@@ -275,13 +275,16 @@
 	    var chunks = [];
 	    var signMatched = normalizedValue.match(/^([+-])/);
 	    var sign = signMatched ? signMatched[1] : '';
-	    normalizedValue = normalizedValue.replace(new RegExp("[" + __spreadArrays([
+	    normalizedValue = normalizedValue.replace(new RegExp("[^" + __spreadArrays([
 	        '.'
-	    ], Object.keys(basicNumber), Object.keys(basicDigit), Object.keys(largeDigit)).join('|') + "]"), '');
+	    ], Object.keys(basicNumber), Object.keys(basicDigit), Object.keys(largeDigit)) + "]", 'g'), '');
 	    if (normalizedValue === '')
 	        return '';
+	    console.log(complexLargeDigitPattern.test(normalizedValue));
 	    do {
 	        var matched_1 = normalizedValue.match(complexLargeDigitPattern);
+	        if (!matched_1)
+	            break;
 	        var digit = matched_1[0];
 	        var hasLeadDigit = digit.match(basicDigitPattern);
 	        var leadDigit = hasLeadDigit ? basicDigit[hasLeadDigit[0]] : 1;
@@ -296,6 +299,8 @@
 	    } while (complexLargeDigitPattern.test(normalizedValue));
 	    do {
 	        var matched_2 = normalizedValue.match(simpleDigitPattern);
+	        if (!matched_2)
+	            break;
 	        var digit = matched_2[0];
 	        var mainDigit = largeDigit[digit] || basicDigit[digit] || 1;
 	        var numbers_2 = normalizedValue.slice(0, matched_2.index) || '1';
